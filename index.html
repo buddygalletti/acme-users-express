@@ -20,6 +20,16 @@
     align-items: center;
     flex-direction: column;
   }
+	#products {
+		display: flex;
+		justify-content: center;
+	}
+	ul {
+		list-style-type: none;
+	}
+	button {
+		margin-left: 1em;
+	}
 </style>
     <script src='https://cdnjs.cloudflare.com/ajax/libs/axios/0.18.0/axios.js'></script>
     <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
@@ -47,14 +57,14 @@
 			const Home = () => <div>Welcome to ACME Product Database</div>
 			
 			const Products = (props) => {
-				const { products } = props;
+				const { products, handleDestroy } = props;
 				return (
 					<div id='products'>
 						<ul>
 							{
 								products.map(product => {
 									return (
-										<li key={ product.id }>{ product.name }<button>Destroy</button></li>
+										<li key={ product.id }>{ product.name }<button onClick={() => handleDestroy(product.id)}>Destroy</button></li>
 									)
 								})
 							}	
@@ -78,7 +88,10 @@
 					console.log(this.state);
 				}
 
-				handleSubmit() {
+				handleSubmit(event) {
+					const { product } = this.state;
+					event.preventDefault();
+          // axios.post('/products/', { product });
     			location.hash = '/products';
   			}
 
@@ -107,15 +120,25 @@
 							{id: 3, name: 'product-test-3'}
 						]
 					}
+					this.handleDestroy = this.handleDestroy.bind(this);
 				}
+
+				handleDestroy(id) {
+					const { products } = this.state;
+					const result = products.filter(product => product.id !== Number(id));
+					console.log(result);
+					this.setState({products: result});
+				}
+
 				render() {
 					const { products } = this.state;
+					const { handleDestroy } = this;
 					return (
 						<HashRouter>
 							<h1>ACME Products</h1>
 							<Route path='/' render={() => <Nav products={ products } />}/>
 							<Route path='/home' exact component={ Home } />
-							<Route path='/products' exact render={() => <Products products={ products }/> } />
+							<Route path='/products' exact render={() => <Products products={ products } handleDestroy={ handleDestroy } /> } />
 							<Route path='/products/create' exact component={ CreateProduct } />
 						</HashRouter>
 					)
