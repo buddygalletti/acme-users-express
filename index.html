@@ -33,12 +33,12 @@
 			const { HashRouter, Route, NavLink, Link } = ReactRouterDOM;
 			
 			const Nav = (props) => {
-				const { data } = props;
+				const { products } = props;
         const activeStyle = { backgroundColor: 'dodgerblue', color: 'white', borderRadius: '10px', textDecoration: 'none' }
         return (
           <div id='nav'>
             <NavLink className="navLink" activeStyle={ activeStyle } to='/home'>Home</NavLink>
-            <NavLink className="navLink" activeStyle={ activeStyle } to='/products' exact>Products ({`${data.length}`})</NavLink>
+            <NavLink className="navLink" activeStyle={ activeStyle } to='/products' exact>Products ({`${products.length}`})</NavLink>
             <NavLink className="navLink" activeStyle={ activeStyle } to='/products/create'>Create A Product</NavLink>
           </div>
         )
@@ -46,37 +46,76 @@
 			
 			const Home = () => <div>Welcome to ACME Product Database</div>
 			
-			const Products = () => {
-				return 'hello'
-			}
-
-			const CreateProduct = () => {
+			const Products = (props) => {
+				const { products } = props;
 				return (
-					<div id='create'>
-						<h2>Create A Product</h2>
-						<form>
-							<input placeholder='enter a new product' name='product' />
-							<button type='submit'>Save</button>
-						</form>
+					<div id='products'>
+						<ul>
+							{
+								products.map(product => {
+									return (
+										<li key={ product.id }>{ product.name }<button>Destroy</button></li>
+									)
+								})
+							}	
+						</ul>
 					</div>
 				)
+			}
+
+			class CreateProduct extends React.Component {
+				constructor() {
+					super();
+					this.state = {
+						product: ''
+					}
+					this.handleChange = this.handleChange.bind(this);
+					this.handleSubmit = this.handleSubmit.bind(this);
+				}
+				
+				handleChange(event) {
+					this.setState({ [event.target.name]: event.target.value });
+					console.log(this.state);
+				}
+
+				handleSubmit() {
+    			location.hash = '/products';
+  			}
+
+				render() {
+					const { product } = this.state;
+					const { handleChange, handleSubmit } = this;
+					return (
+						<div id='create'>
+							<h2>Create A Product</h2>
+							<form onSubmit={ handleSubmit } action='POST'>
+								<input placeholder='enter a new product' name='product' value={ product } onChange={ handleChange } />
+								<button type='submit'>Save</button>
+							</form>
+						</div>
+					)
+				}
 			}
 
 			class App extends React.Component {
 				constructor() {
 					super();
 					this.state = {
-						data: []
+						products: [
+							{id: 1, name: 'product-test-1'},
+							{id: 2, name: 'product-test-2'},
+							{id: 3, name: 'product-test-3'}
+						]
 					}
 				}
 				render() {
-					const { data } = this.state;
+					const { products } = this.state;
 					return (
 						<HashRouter>
 							<h1>ACME Products</h1>
-							<Route path='/' render={() => <Nav data={ data } />}/>
+							<Route path='/' render={() => <Nav products={ products } />}/>
 							<Route path='/home' exact component={ Home } />
-							<Route path='/products' exact component={ Products } />
+							<Route path='/products' exact render={() => <Products products={ products }/> } />
 							<Route path='/products/create' exact component={ CreateProduct } />
 						</HashRouter>
 					)
